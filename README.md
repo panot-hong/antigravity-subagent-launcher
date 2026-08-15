@@ -6,9 +6,26 @@ It leverages your existing **Google Antigravity Subscription** credentials (via 
 
 ---
 
-## 🤖 Supported Coding Agents & Frameworks
+## ⚡ 1-Line Automated Installation
 
-This launcher is designed out-of-the-box to work with any tool or agent capable of running terminal commands or loading skill files:
+Clone the repository and run the automated installer script (`install.py`):
+
+```bash
+git clone https://github.com/panot-hong/antigravity-subagent-launcher.git
+cd antigravity-subagent-launcher
+python install.py
+```
+
+### What `install.py` Automatically Does:
+1. **Installs SDK Dependencies**: Automatically runs `pip install google-antigravity`.
+2. **Auto-Registers Skills**: Resolves paths and installs `spawn-antigravity` into:
+   - **Claude Code**: `~/.claude/skills/spawn-antigravity.md`
+   - **Antigravity / Codex**: `~/.gemini/config/skills/spawn-antigravity/SKILL.md`
+3. **Verifies Login Credentials**: Checks that `agy` local credentials (`~/.gemini/oauth_creds.json`) are present.
+
+---
+
+## 🤖 Supported Coding Agents & Frameworks
 
 | Agent / Tool | Supported Integration Method | How It Works |
 | :--- | :--- | :--- |
@@ -30,23 +47,7 @@ This launcher is designed out-of-the-box to work with any tool or agent capable 
 
 ---
 
-## 📋 Prerequisites
-
-1. **Python 3.9+**
-2. **Google Antigravity SDK** (or `agy` CLI):
-   ```bash
-   pip install google-antigravity
-   ```
-3. **Active Antigravity Account Login**:
-   Make sure `agy` is logged in on your machine once:
-   ```bash
-   agy login
-   # OR open the Antigravity Desktop App / IDE
-   ```
-
----
-
-## 🚀 Quickstart
+## 🚀 Usage Examples
 
 ### Direct Command Line Usage
 
@@ -67,40 +68,25 @@ python agy_subagent.py --prompt "Analyze security vulnerabilities" --workdir "/p
 
 ---
 
-## 🛠️ Step-by-Step Integration for Specific Agents
+## 🛠️ Manual Skill Integration (Optional)
 
-### 1. Integrating with Claude Code
+If you prefer to manually register the skill rather than running `python install.py`:
 
-To let **Claude Code** spawn Antigravity as a skill:
+### For Claude Code
+Copy `SKILL.md` to Claude Code's skill directory:
+```bash
+# Global across projects:
+cp SKILL.md ~/.claude/skills/spawn-antigravity.md
 
-1. Copy `SKILL.md` to Claude Code's skill directory:
-   ```bash
-   # User-level (global across all projects):
-   mkdir -p ~/.claude/skills/
-   cp SKILL.md ~/.claude/skills/spawn-antigravity.md
+# Project-level:
+cp SKILL.md .claude/skills/spawn-antigravity.md
+```
 
-   # Project-level (repo specific):
-   mkdir -p .claude/skills/
-   cp SKILL.md .claude/skills/spawn-antigravity.md
-   ```
-2. In Claude Code, tell it:
-   > *"Use the spawn-antigravity skill to refactor the module using Gemini 3.6 Pro."*
-
----
-
-### 2. Integrating with OpenAI Codex / Custom Agents
-
-To let **Codex** or custom agentic scripts use Antigravity:
-
-1. Copy `SKILL.md` to your workspace skills directory:
-   ```bash
-   mkdir -p .agents/skills/spawn-antigravity/
-   cp SKILL.md .agents/skills/spawn-antigravity/SKILL.md
-   ```
-2. Codex can run the tool via command line execution:
-   ```bash
-   python /path/to/antigravity-subagent-launcher/agy_subagent.py --prompt "<TASK_DESCRIPTION>" --model gemini-3.6-pro
-   ```
+### For OpenAI Codex / Antigravity
+Copy `SKILL.md` to the agent skill directory:
+```bash
+cp SKILL.md ~/.gemini/config/skills/spawn-antigravity/SKILL.md
+```
 
 ---
 
@@ -126,24 +112,12 @@ options:
 
 ```
 antigravity-subagent-launcher/
+├── install.py           # Automated 1-click setup & skill installer
 ├── agy_subagent.py      # Core Python launcher (SDK + CLI fallback)
-├── SKILL.md             # Standard Agent Skill specification (Codex, Claude Code, AGY)
+├── SKILL.md             # Standard Agent Skill specification
 ├── requirements.txt     # Python dependencies (google-antigravity)
 ├── .gitignore           # Git ignore patterns
-└── README.md            # Complete multi-agent setup & usage guide
-```
-
----
-
-## 🔄 Syncing Across Computers via GitHub
-
-```bash
-# Clone on a new machine:
-git clone https://github.com/panot-hong/antigravity-subagent-launcher.git
-cd antigravity-subagent-launcher
-
-# Install dependencies:
-pip install -r requirements.txt
+└── README.md            # Complete setup & usage guide
 ```
 
 ---
