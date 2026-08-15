@@ -15,13 +15,20 @@ import shutil
 import subprocess
 import pathlib
 
+# Force UTF-8 output encoding if possible on Windows legacy terminals
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 
 def print_step(msg):
     print(f"\n==> {msg}")
 
 
 def print_success(msg):
-    print(f"  [✓] {msg}")
+    print(f"  [OK] {msg}")
 
 
 def print_warning(msg):
@@ -121,7 +128,7 @@ def main():
     check_auth_status()
 
     print("\n==========================================================")
-    print("  🎉 Setup Complete!")
+    print("  Setup Complete!")
     print("==========================================================")
     print("You can test the launcher right now by running:")
     print(f'  python "{script_abs_path}" --prompt "Hello from Antigravity sub-agent!"\n')
