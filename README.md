@@ -1,6 +1,6 @@
 # Antigravity Sub-Agent Launcher (`antigravity-subagent-launcher`)
 
-A lightweight, cross-platform bridge and agent tool interface that allows **any coding agent** (such as **OpenAI Codex**, **Claude Code**, **Cursor**, **Windsurf**, **Aider**, or custom AI agent loops) to spawn **Google Antigravity (`agy`)** as an autonomous sub-agent.
+A lightweight, cross-platform bridge and agent tool interface that allows external coding agents (**OpenAI Codex**, **Claude Code**, **Cursor**, **Windsurf**, **Aider**, or custom AI loops) to spawn **Google Antigravity (`agy`)** as an autonomous sub-agent.
 
 It leverages your existing **Google Antigravity Subscription** credentials (via local OAuth session sharing), allowing external AI agents to delegate tasks to Gemini 3.6 Pro / Gemini 3.6 Flash without requiring pay-per-token API keys.
 
@@ -18,9 +18,10 @@ python install.py
 
 ### What `install.py` Automatically Does:
 1. **Installs SDK Dependencies**: Automatically runs `pip install google-antigravity`.
-2. **Auto-Registers Skills**: Resolves paths and installs `spawn-antigravity` into:
+2. **Auto-Registers Skills**: Resolves paths and installs `spawn-antigravity` for your agents:
+   - **OpenAI Codex**: `~/.codex/skills/spawn-antigravity/SKILL.md`
    - **Claude Code**: `~/.claude/skills/spawn-antigravity.md`
-   - **Antigravity / Codex**: `~/.gemini/config/skills/spawn-antigravity/SKILL.md`
+   - **Global `.agents` Registry**: `~/.agents/skills/spawn-antigravity/SKILL.md`
 3. **Verifies Login Credentials**: Checks that `agy` local credentials (`~/.gemini/oauth_creds.json`) are present.
 
 ---
@@ -36,7 +37,7 @@ python install.py
 
 ---
 
-## 🌟 Why Delegate to Antigravity as a Sub-Agent?
+## 🌟 Why Delegate to Antigravity from Codex?
 
 1. **Subscription-Based Auth**: Uses your existing logged-in Antigravity account (`~/.gemini/`) rather than pay-per-token API keys.
 2. **Model Switching**: Easily switch between high-reasoning **Gemini 3.6 Pro** (for architecture, planning, deep refactoring) and fast **Gemini 3.6 Flash** (for quick edits, test fixes, searches).
@@ -72,20 +73,24 @@ python agy_subagent.py --prompt "Analyze security vulnerabilities" --workdir "/p
 
 If you prefer to manually register the skill rather than running `python install.py`:
 
+### For OpenAI Codex
+Copy `SKILL.md` to your Codex skills directory:
+```bash
+# Global user level:
+cp SKILL.md ~/.codex/skills/spawn-antigravity/SKILL.md
+
+# Project repo level:
+cp SKILL.md .agents/skills/spawn-antigravity/SKILL.md
+```
+
 ### For Claude Code
 Copy `SKILL.md` to Claude Code's skill directory:
 ```bash
-# Global across projects:
+# Global user level:
 cp SKILL.md ~/.claude/skills/spawn-antigravity.md
 
-# Project-level:
+# Project repo level:
 cp SKILL.md .claude/skills/spawn-antigravity.md
-```
-
-### For OpenAI Codex / Antigravity
-Copy `SKILL.md` to the agent skill directory:
-```bash
-cp SKILL.md ~/.gemini/config/skills/spawn-antigravity/SKILL.md
 ```
 
 ---
@@ -112,9 +117,9 @@ options:
 
 ```
 antigravity-subagent-launcher/
-├── install.py           # Automated 1-click setup & skill installer
+├── install.py           # Automated 1-click setup & skill installer for Codex & Claude Code
 ├── agy_subagent.py      # Core Python launcher (SDK + CLI fallback)
-├── SKILL.md             # Standard Agent Skill specification
+├── SKILL.md             # Standard Agent Skill specification (OpenAI Codex, Claude Code)
 ├── requirements.txt     # Python dependencies (google-antigravity)
 ├── .gitignore           # Git ignore patterns
 └── README.md            # Complete setup & usage guide

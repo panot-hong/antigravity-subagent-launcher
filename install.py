@@ -3,7 +3,7 @@
 Antigravity Sub-Agent Launcher - Automated Installer
 ---------------------------------------------------
 Automates the installation of dependencies and registers the `spawn-antigravity` skill
-for Claude Code, OpenAI Codex, Antigravity, and Agentic environments across Windows, macOS, and Linux.
+for OpenAI Codex, Claude Code, and external agentic environments across Windows, macOS, and Linux.
 
 Usage:
     python install.py
@@ -59,7 +59,7 @@ def prepare_skill_content(script_abs_path: str, skill_template_path: str) -> str
 
 
 def register_skills(script_abs_path: str):
-    print_step("Registering skills for Claude Code, OpenAI Codex, and Antigravity...")
+    print_step("Registering skills for OpenAI Codex and Claude Code...")
     
     home_dir = pathlib.Path.home()
     repo_dir = pathlib.Path(__file__).parent.resolve()
@@ -72,11 +72,10 @@ def register_skills(script_abs_path: str):
     skill_content = prepare_skill_content(str(script_abs_path), str(skill_template))
 
     targets = [
-        ("Claude Code", home_dir / ".claude" / "skills" / "spawn-antigravity.md"),
         ("OpenAI Codex (Directory Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity" / "SKILL.md"),
         ("OpenAI Codex (Flat Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity.md"),
-        ("Global .agents Registry", home_dir / ".agents" / "skills" / "spawn-antigravity" / "SKILL.md"),
-        ("Antigravity / Gemini Config", home_dir / ".gemini" / "config" / "skills" / "spawn-antigravity" / "SKILL.md"),
+        ("Claude Code Skill", home_dir / ".claude" / "skills" / "spawn-antigravity.md"),
+        ("Global .agents Skill Registry", home_dir / ".agents" / "skills" / "spawn-antigravity" / "SKILL.md"),
     ]
 
     for name, skill_path in targets:

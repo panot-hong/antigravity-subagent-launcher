@@ -1,11 +1,11 @@
 ---
 name: spawn-antigravity
-description: Delegate sub-tasks, refactoring, research, or execution to Google Antigravity (agy) powered by Gemini 3.6 Pro / Gemini 3.6 Flash using your local Antigravity subscription.
+description: Delegate sub-tasks, refactoring, research, or execution to Google Antigravity (agy) powered by Gemini 3.6 Pro / Gemini 3.6 Flash from OpenAI Codex or Claude Code.
 ---
 
 # Spawn Google Antigravity (AGY) Sub-Agent
 
-Use this skill when you (Codex / Claude Code / external AI model) need to delegate a complex task, broad codebase analysis, multi-file refactoring, or specialized code generation to Google Antigravity as a sub-agent.
+Use this skill when you (**OpenAI Codex** / **Claude Code** / external AI model) need to delegate a complex task, broad codebase analysis, multi-file refactoring, or specialized code generation to Google Antigravity as a sub-agent.
 
 ## When to Use
 - **Deep Refactoring / Planning**: Use `gemini-3.6-pro` model to delegate heavy multi-file edits or architectural reviews.
