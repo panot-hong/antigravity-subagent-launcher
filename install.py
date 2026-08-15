@@ -3,7 +3,7 @@
 Antigravity Sub-Agent Launcher - Automated Installer
 ---------------------------------------------------
 Automates the installation of dependencies and registers the `spawn-antigravity` skill
-for Claude Code, OpenAI Codex, and Antigravity agent environments across Windows, macOS, and Linux.
+for Claude Code, OpenAI Codex, Antigravity, and Agentic environments across Windows, macOS, and Linux.
 
 Usage:
     python install.py
@@ -59,7 +59,7 @@ def prepare_skill_content(script_abs_path: str, skill_template_path: str) -> str
 
 
 def register_skills(script_abs_path: str):
-    print_step("Registering skills for Claude Code, Codex, and Antigravity...")
+    print_step("Registering skills for Claude Code, OpenAI Codex, and Antigravity...")
     
     home_dir = pathlib.Path.home()
     repo_dir = pathlib.Path(__file__).parent.resolve()
@@ -71,27 +71,22 @@ def register_skills(script_abs_path: str):
 
     skill_content = prepare_skill_content(str(script_abs_path), str(skill_template))
 
-    # Target 1: Claude Code Skills (~/.claude/skills/spawn-antigravity.md)
-    claude_skills_dir = home_dir / ".claude" / "skills"
-    try:
-        claude_skills_dir.mkdir(parents=True, exist_ok=True)
-        claude_skill_file = claude_skills_dir / "spawn-antigravity.md"
-        with open(claude_skill_file, "w", encoding="utf-8") as f:
-            f.write(skill_content)
-        print_success(f"Registered Claude Code skill: {claude_skill_file}")
-    except Exception as e:
-        print_warning(f"Could not write Claude Code skill to {claude_skills_dir}: {e}")
+    targets = [
+        ("Claude Code", home_dir / ".claude" / "skills" / "spawn-antigravity.md"),
+        ("OpenAI Codex (Directory Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity" / "SKILL.md"),
+        ("OpenAI Codex (Flat Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity.md"),
+        ("Global .agents Registry", home_dir / ".agents" / "skills" / "spawn-antigravity" / "SKILL.md"),
+        ("Antigravity / Gemini Config", home_dir / ".gemini" / "config" / "skills" / "spawn-antigravity" / "SKILL.md"),
+    ]
 
-    # Target 2: Antigravity / Codex Skills (~/.gemini/config/skills/spawn-antigravity/SKILL.md)
-    gemini_skill_dir = home_dir / ".gemini" / "config" / "skills" / "spawn-antigravity"
-    try:
-        gemini_skill_dir.mkdir(parents=True, exist_ok=True)
-        gemini_skill_file = gemini_skill_dir / "SKILL.md"
-        with open(gemini_skill_file, "w", encoding="utf-8") as f:
-            f.write(skill_content)
-        print_success(f"Registered Antigravity / Codex skill: {gemini_skill_file}")
-    except Exception as e:
-        print_warning(f"Could not write Antigravity skill to {gemini_skill_dir}: {e}")
+    for name, skill_path in targets:
+        try:
+            skill_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(skill_path, "w", encoding="utf-8") as f:
+                f.write(skill_content)
+            print_success(f"Registered {name}: {skill_path}")
+        except Exception as e:
+            print_warning(f"Could not write {name} skill to {skill_path}: {e}")
 
 
 def check_auth_status():
