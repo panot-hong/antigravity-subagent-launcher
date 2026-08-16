@@ -3,7 +3,8 @@
 Antigravity Sub-Agent Launcher - Automated Installer
 ---------------------------------------------------
 Automates the installation of dependencies and registers the `spawn-antigravity` skill
-for OpenAI Codex, Claude Code, and external agentic environments across Windows, macOS, and Linux.
+for OpenAI Codex, Claude Code (including custom profiles like claude-p / .claude-personal),
+and external agentic environments across Windows, macOS, and Linux.
 
 Usage:
     python install.py
@@ -59,7 +60,7 @@ def prepare_skill_content(script_abs_path: str, skill_template_path: str) -> str
 
 
 def register_skills(script_abs_path: str):
-    print_step("Registering skills for OpenAI Codex and Claude Code...")
+    print_step("Registering skills for Claude Code (all profiles), OpenAI Codex, and Agent Registries...")
     
     home_dir = pathlib.Path.home()
     repo_dir = pathlib.Path(__file__).parent.resolve()
@@ -74,9 +75,16 @@ def register_skills(script_abs_path: str):
     targets = [
         ("OpenAI Codex (Directory Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity" / "SKILL.md"),
         ("OpenAI Codex (Flat Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity.md"),
-        ("Claude Code Skill", home_dir / ".claude" / "skills" / "spawn-antigravity.md"),
         ("Global .agents Skill Registry", home_dir / ".agents" / "skills" / "spawn-antigravity" / "SKILL.md"),
+        ("Claude Code (Default Profile)", home_dir / ".claude" / "skills" / "spawn-antigravity.md"),
     ]
+
+    # Dynamically detect any additional custom Claude Code profiles (e.g. .claude-personal for claude-p)
+    for path in home_dir.iterdir():
+        if path.is_dir() and path.name.startswith(".claude") and path.name != ".claude":
+            # Skip non-config cache or log folders like .claude-server-commander-logs
+            if not any(skip_token in path.name for skip_token in ["-server-commander", "-cache", "-log"]):
+                targets.append((f"Claude Code Profile ({path.name})", path / "skills" / "spawn-antigravity.md"))
 
     for name, skill_path in targets:
         try:
