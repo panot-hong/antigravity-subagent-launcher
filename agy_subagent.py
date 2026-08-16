@@ -4,68 +4,52 @@ Antigravity (AGY) Sub-Agent Launcher
 ------------------------------------
 Allows external AI agents (OpenAI Codex, Claude Code, Cursor, custom scripts)
 to spawn Google Antigravity as a sub-agent to execute complex coding, refactoring,
-or research tasks using your existing Antigravity subscription.
+or research tasks using your existing Antigravity subscription credentials.
 
 Usage:
     python agy_subagent.py --prompt "Fix all broken unit tests in ./tests"
-    python agy_subagent.py --prompt "Refactor db layer" --model gemini-3.6-pro
-    python agy_subagent.py --prompt "Analyze codebase" --read-only
+    python agy_subagent.py --prompt "Refactor db layer" --model gemini-3.6-pro --effort high
+    python agy_subagent.py --prompt "Analyze codebase" --workdir "/path/to/project"
 """
 
 import sys
 import os
 import argparse
-import asyncio
 import subprocess
 import shutil
 
-# Try importing the official google-antigravity Python SDK
-try:
-    from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
-    HAS_SDK = True
-except ImportError:
-    HAS_SDK = False
 
-
-async def run_via_sdk(prompt: str, model: str, system_instructions: str, read_only: bool, workdir: str):
-    """Executes the sub-agent via the official Python SDK."""
-    if workdir:
-        os.chdir(workdir)
-
-    capabilities = CapabilitiesConfig() if not read_only else None
-    
-    config = LocalAgentConfig(
-        model=model,
-        system_instructions=system_instructions or "You are an Antigravity (AGY) sub-agent spawned by an external AI supervisor.",
-        capabilities=capabilities,
-    )
-
-    async with Agent(config) as agent:
-        response = await agent.chat(prompt)
-        async for token in response:
-            sys.stdout.write(token)
-            sys.stdout.flush()
-        print()
-
-
-def run_via_cli(prompt: str, model: str, read_only: bool, workdir: str):
-    """Fallback execution via agy CLI subprocess if Python SDK is not installed."""
+def run_agy(prompt: str, model: str, effort: str, workdir: str, skip_permissions: bool, mode: str, output_format: str):
+    """Executes agy CLI with correct subscription credentials and flags."""
     agy_bin = shutil.which("agy")
     if not agy_bin:
-        print("[Error] Neither 'google-antigravity' Python SDK nor 'agy' CLI was found in PATH.", file=sys.stderr)
-        print("Please install the SDK via `pip install google-antigravity` or install the Antigravity CLI.", file=sys.stderr)
+        print("[Error] 'agy' CLI binary was not found in PATH.", file=sys.stderr)
+        print("Please install Antigravity CLI and ensure 'agy' is accessible.", file=sys.stderr)
         sys.exit(1)
 
     cmd = [agy_bin, "-p", prompt]
+    
     if model:
         cmd.extend(["--model", model])
-    if read_only:
-        cmd.append("--read-only")
-
-    cwd = workdir if workdir else os.getcwd()
     
-    print(f"[AGY Sub-Agent Launcher] Invoking CLI: {' '.join(cmd)} (cwd: {cwd})")
-    subprocess.run(cmd, cwd=cwd)
+    if effort:
+        cmd.extend(["--effort", effort])
+        
+    if skip_permissions:
+        cmd.append("--dangerously-skip-permissions")
+        
+    if mode:
+        cmd.extend(["--mode", mode])
+        
+    if output_format and output_format != "text":
+        cmd.extend(["--output-format", output_format])
+
+    cwd = os.path.abspath(workdir) if workdir else os.getcwd()
+    cmd.extend(["--add-dir", cwd])
+    
+    print(f"[AGY Sub-Agent Launcher] Invoking CLI: {' '.join(cmd)}", file=sys.stderr)
+    result = subprocess.run(cmd, cwd=cwd)
+    sys.exit(result.returncode)
 
 
 def main():
@@ -80,45 +64,48 @@ def main():
     parser.add_argument(
         "--model", "-m",
         default="gemini-3.6-flash",
-        help="Model to use (e.g. gemini-3.6-pro, gemini-3.6-flash, pro, flash). Default: gemini-3.6-flash."
+        help="Model to use (e.g. gemini-3.6-pro, gemini-3.6-flash). Default: gemini-3.6-flash."
     )
     parser.add_argument(
-        "--system-instructions", "-s",
-        default="You are an Antigravity (AGY) sub-agent spawned to complete a specific task for an external AI agent.",
-        help="Custom system instructions for the sub-agent."
+        "--effort", "-e",
+        default="high",
+        choices=["low", "medium", "high"],
+        help="Reasoning effort level for the model (low, medium, high). Default: high."
     )
     parser.add_argument(
         "--workdir", "-w",
         default="",
-        help="Working directory path for the sub-agent task."
+        help="Working directory path for the sub-agent task (passed via --add-dir)."
     )
     parser.add_argument(
-        "--read-only",
-        action="store_true",
-        help="Run the agent in read-only mode (prevents file writes and system execution)."
+        "--mode",
+        default="",
+        choices=["", "accept-edits", "plan"],
+        help="Execution mode for the sub-agent (accept-edits, plan)."
     )
     parser.add_argument(
-        "--force-cli",
+        "--no-skip-permissions",
         action="store_true",
-        help="Force CLI execution instead of Python SDK."
+        help="Do not pass --dangerously-skip-permissions (defaults to auto-approving tool permissions)."
+    )
+    parser.add_argument(
+        "--output-format",
+        default="text",
+        choices=["text", "json", "stream-json"],
+        help="Output format (text, json, stream-json). Default: text."
     )
 
     args = parser.parse_args()
 
-    if HAS_SDK and not args.force_cli:
-        try:
-            asyncio.run(run_via_sdk(
-                prompt=args.prompt,
-                model=args.model,
-                system_instructions=args.system_instructions,
-                read_only=args.read_only,
-                workdir=args.workdir
-            ))
-        except Exception as e:
-            print(f"[Warning] SDK execution encountered error: {e}. Falling back to CLI...", file=sys.stderr)
-            run_via_cli(args.prompt, args.model, args.read_only, args.workdir)
-    else:
-        run_via_cli(args.prompt, args.model, args.read_only, args.workdir)
+    run_agy(
+        prompt=args.prompt,
+        model=args.model,
+        effort=args.effort,
+        workdir=args.workdir,
+        skip_permissions=not args.no_skip_permissions,
+        mode=args.mode,
+        output_format=args.output_format
+    )
 
 
 if __name__ == "__main__":
