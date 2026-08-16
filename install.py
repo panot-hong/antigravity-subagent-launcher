@@ -3,8 +3,7 @@
 Antigravity Sub-Agent Launcher - Automated Installer
 ---------------------------------------------------
 Automates the installation of dependencies and registers the `spawn-antigravity` skill
-for OpenAI Codex, Claude Code (including custom profiles like claude-p / .claude-personal),
-and external agentic environments across Windows, macOS, and Linux.
+for OpenAI Codex, Claude Code (all profiles and formats), and agentic environments across Windows, macOS, and Linux.
 
 Usage:
     python install.py
@@ -60,7 +59,7 @@ def prepare_skill_content(script_abs_path: str, skill_template_path: str) -> str
 
 
 def register_skills(script_abs_path: str):
-    print_step("Registering skills for Claude Code (all profiles), OpenAI Codex, and Agent Registries...")
+    print_step("Registering skills for Claude Code (all profiles & formats), OpenAI Codex, and Agent Registries...")
     
     home_dir = pathlib.Path.home()
     repo_dir = pathlib.Path(__file__).parent.resolve()
@@ -72,28 +71,33 @@ def register_skills(script_abs_path: str):
 
     skill_content = prepare_skill_content(str(script_abs_path), str(skill_template))
 
-    targets = [
-        ("OpenAI Codex (Directory Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity" / "SKILL.md"),
-        ("OpenAI Codex (Flat Skill)", home_dir / ".codex" / "skills" / "spawn-antigravity.md"),
-        ("Global .agents Skill Registry", home_dir / ".agents" / "skills" / "spawn-antigravity" / "SKILL.md"),
-        ("Claude Code (Default Profile)", home_dir / ".claude" / "skills" / "spawn-antigravity.md"),
+    # Directories where skills should be registered
+    base_skill_dirs = [
+        ("OpenAI Codex", home_dir / ".codex" / "skills"),
+        ("Global .agents Registry", home_dir / ".agents" / "skills"),
+        ("Claude Code (Default Profile)", home_dir / ".claude" / "skills"),
     ]
 
     # Dynamically detect any additional custom Claude Code profiles (e.g. .claude-personal for claude-p)
     for path in home_dir.iterdir():
         if path.is_dir() and path.name.startswith(".claude") and path.name != ".claude":
-            # Skip non-config cache or log folders like .claude-server-commander-logs
             if not any(skip_token in path.name for skip_token in ["-server-commander", "-cache", "-log"]):
-                targets.append((f"Claude Code Profile ({path.name})", path / "skills" / "spawn-antigravity.md"))
+                base_skill_dirs.append((f"Claude Code Profile ({path.name})", path / "skills"))
 
-    for name, skill_path in targets:
-        try:
-            skill_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(skill_path, "w", encoding="utf-8") as f:
-                f.write(skill_content)
-            print_success(f"Registered {name}: {skill_path}")
-        except Exception as e:
-            print_warning(f"Could not write {name} skill to {skill_path}: {e}")
+    for name, skill_dir in base_skill_dirs:
+        # Format 1: Folder style (skills/<name>/SKILL.md)
+        dir_format_path = skill_dir / "spawn-antigravity" / "SKILL.md"
+        # Format 2: Flat file style (skills/<name>.md)
+        flat_format_path = skill_dir / "spawn-antigravity.md"
+
+        for skill_path in [dir_format_path, flat_format_path]:
+            try:
+                skill_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(skill_path, "w", encoding="utf-8") as f:
+                    f.write(skill_content)
+                print_success(f"Registered {name}: {skill_path}")
+            except Exception as e:
+                print_warning(f"Could not write {name} skill to {skill_path}: {e}")
 
 
 def check_auth_status():
